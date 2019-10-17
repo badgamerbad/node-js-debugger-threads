@@ -1,54 +1,27 @@
 const express = require("express");
 const crypto = require("crypto");
 const app = express();
-// const { Worker, isMainThread, parentPort, workerData } = require("worker_threads");
 
 const cluster = require('cluster');
+const numCPUs = require('os').cpus().length;
 
-// if(cluster.isMaster) {
-//     cluster.fork();
-//     cluster.fork();
-//     cluster.fork();
-// }
-// else {
-//     app.get('/performOperation', (req, res) => {
-//         crypto.pbkdf2('a', 'b', 10000, 512, 'sha512', () => {
-//             res.send("pbkdf2 complete");
-//         });
-//     });
-//     app.get('/', (req, res) => {
-//         res.send("Hello World");
-//     });
-//     let port = 3000;
-//     app.listen(port, () => console.log(`Example app listening on port ${port}!`));
-// }
+const portArgvIndex = process.argv.indexOf("--port");
+const port = portArgvIndex > -1 ? process.argv[portArgvIndex + 1] : 3000;
 
-// if(isMainThread) {
-//     // This re-loads the current file inside a Worker instance.
-//     new Worker(__filename);
-//     new Worker(__filename);
-//     new Worker(__filename);
-//     let port = 3000;
-//     app.listen(port, () => console.log(`Example app listening on port ${port}!`));
-// }
-// else {
-//     app.get('/performOperation', (req, res) => {
-//         crypto.pbkdf2('a', 'b', 10000, 512, 'sha512', () => {
-//             res.send("pbkdf2 complete");
-//         });
-//     });
-//     app.get('/', (req, res) => {
-//         res.send("Hello World");
-//     });
-// }
-
-app.get('/performOperation', (req, res) => {
-    crypto.pbkdf2('a', 'b', 10000, 512, 'sha512', () => {
-        res.send("pbkdf2 complete");
+if(cluster.isMaster) {
+    console.log(`Master ${process.pid} is running`);
+    for(let i = 0; i < numCPUs; ++i) {
+        cluster.fork();
+    }
+}
+else {
+    app.get('/performOperation', (req, res) => {
+        crypto.pbkdf2('a', 'b', 1000000, 512, 'sha512', () => {
+            res.send("pbkdf2 complete");
+        });
     });
-});
-app.get('/', (req, res) => {
-    res.send("Hello World");
-});
-let port = 3000;
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+    app.get('/', (req, res) => {
+        res.send("Hello World");
+    });
+    app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+}
