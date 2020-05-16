@@ -16,6 +16,7 @@ if(cluster.isMaster) {
 }
 else {
     app.get('/performOperation', (req, res) => {
+        // file deepcode ignore HardcodedSecret: <This is a demo repository, so relax deep code>
         crypto.pbkdf2('a', 'b', 1000000, 512, 'sha512', () => {
             res.send("pbkdf2 complete");
         });
